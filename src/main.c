@@ -22,13 +22,14 @@ void my_packet_handler(
 )
 
 {
-
+  ETHER_Frame custom_frame;
+  populate_packet_ds(header, packet, &custom_frame);
 }
 
 int main(int argc, char *argv[]) 
 {
 
-        char *device = "eth0";
+        char *device = "wlp5s0";
         char error_buffer[PCAP_ERRBUF_SIZE];
         pcap_t *handle;
 
