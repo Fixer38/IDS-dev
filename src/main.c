@@ -2,7 +2,20 @@
 
 struct ids_rule
 {
+  char * action;
+  char * protocol;
+  char source_ad[IP_ADDR_LEN_STR];
+  int source_po;
+  char * direction;
+  char destination_ad[IP_ADDR_LEN_STR];
+  int destination_po;
 } typedef Rule;
+
+struct rule_option
+{
+  char * key;
+  char * value;
+} typedef Rule_option;
 
 void rule_matcher(Rule *rules_ds, ETHER_Frame *frame)
 {
@@ -28,7 +41,7 @@ void my_packet_handler(
 
 int main(int argc, char *argv[]) 
 {
-
+        
         char *device = "wlp5s0";
         char error_buffer[PCAP_ERRBUF_SIZE];
         pcap_t *handle;
