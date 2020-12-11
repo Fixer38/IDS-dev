@@ -72,6 +72,7 @@ void my_packet_handler(
         const u_char *packet
 )
 {
+  Rule * rule_ds = (Rule *) args;
   ETHER_Frame custom_frame;
   populate_packet_ds(header, packet, &custom_frame);
 }
