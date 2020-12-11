@@ -28,20 +28,9 @@ void read_rules(FILE * file, Rule *rules_ds, int count)
   char line[100];
   while(fgets(line, 100, file) != NULL)
   {
-    char * rule = strtok(line, " ");
-    strcpy(rules_ds[current_line].action, rule);
-    rule = strtok(NULL, " ");
-    strcpy(rules_ds[current_line].protocol, rule);
-    rule = strtok(NULL, " ");
-    strcpy(rules_ds[current_line].source_ad, rule);
-    rule = strtok(NULL, " ");
-    strcpy(rules_ds[current_line].source_po, rule);
-    rule = strtok(NULL, " ");
-    strcpy(rules_ds[current_line].direction, rule);
-    rule = strtok(NULL, " ");
-    strcpy(rules_ds[current_line].destination_ad, rule);
-    rule = strtok(NULL, " ");
-    strcpy(rules_ds[current_line].destination_po, rule);
+    char * test = NULL;
+    sscanf(line, "%s %s %s %s %s %s %s",
+        rules_ds[current_line].action, rules_ds[current_line].protocol, rules_ds[current_line].source_ad, rules_ds[current_line].source_po, rules_ds[current_line].direction, rules_ds[current_line].destination_ad, rules_ds[current_line].destination_po); 
     current_line++;
   }
   fclose(file);
