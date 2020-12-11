@@ -28,9 +28,10 @@ void read_rules(FILE * file, Rule *rules_ds, int count)
   char line[100];
   while(fgets(line, 100, file) != NULL)
   {
-    char * test = NULL;
-    sscanf(line, "%s %s %s %s %s %s %s",
-        rules_ds[current_line].action, rules_ds[current_line].protocol, rules_ds[current_line].source_ad, rules_ds[current_line].source_po, rules_ds[current_line].direction, rules_ds[current_line].destination_ad, rules_ds[current_line].destination_po); 
+    char options[50];
+    sscanf(line, "%s %s %s %s %s %s %s (%[^))]",
+        rules_ds[current_line].action, rules_ds[current_line].protocol, rules_ds[current_line].source_ad, rules_ds[current_line].source_po, rules_ds[current_line].direction, rules_ds[current_line].destination_ad, rules_ds[current_line].destination_po, options); 
+    printf("%s", options);
     current_line++;
   }
   fclose(file);
