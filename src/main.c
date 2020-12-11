@@ -2,13 +2,13 @@
 
 struct ids_rule
 {
-  char * action;
-  char * protocol;
+  char action[6];
+  char protocol[6];
   char source_ad[IP_ADDR_LEN_STR];
-  int source_po;
-  char direction;
+  char source_po[5];
+  char direction[3];
   char destination_ad[IP_ADDR_LEN_STR];
-  int destination_po;
+  char destination_po[5];
 } typedef Rule;
 
 struct rule_option
@@ -26,18 +26,25 @@ void read_rules(FILE * file, Rule *rules_ds, int count)
 {
   int current_line = 0;
   char line[100];
-  while(current_line < count)
+  while(fgets(line, 100, file) != NULL)
   {
     char * rule = strtok(line, " ");
-    rules_ds[0].action = &rule[0];
-    rules_ds[0].protocol = &rule[1];
-    strcpy(rules_ds[0].source_ad, &rule[2]);
-    rules_ds[0].source_po = rule[3];
-    rules_ds[0].direction = rule[4];
-    strcpy(rules_ds[0].destination_ad, &rule[5]);
-    rules_ds[0].destination_po = rule[6];
+    strcpy(rules_ds[current_line].action, rule);
+    rule = strtok(NULL, " ");
+    strcpy(rules_ds[current_line].protocol, rule);
+    rule = strtok(NULL, " ");
+    strcpy(rules_ds[current_line].source_ad, rule);
+    rule = strtok(NULL, " ");
+    strcpy(rules_ds[current_line].source_po, rule);
+    rule = strtok(NULL, " ");
+    strcpy(rules_ds[current_line].direction, rule);
+    rule = strtok(NULL, " ");
+    strcpy(rules_ds[current_line].destination_ad, rule);
+    rule = strtok(NULL, " ");
+    strcpy(rules_ds[current_line].destination_po, rule);
     current_line++;
   }
+  fclose(file);
 }
 
 int count_line_in_file(FILE * file)
@@ -82,6 +89,18 @@ int main(int argc, char *argv[])
         fptr = fopen(argv[1], "r");
         read_rules(fptr, rule_ds, nb_line);
 
+        // Test de rule_ds
+        for(int i=0; i < nb_line; i++)
+        {
+          printf("Action: %s\n", rule_ds[i].action);
+          printf("Protocol: %s\n", rule_ds[i].protocol);
+          printf("source address: %s\n", rule_ds[i].source_ad);
+          printf("Source port: %s\n", rule_ds[i].source_po);
+          printf("Direction: %s\n", rule_ds[i].direction);
+          printf("Destination Adress: %s\n", rule_ds[i].destination_ad);
+          printf("Destination Port: %s\n", rule_ds[i].destination_po);
+        }
+
         // Désignation du device + de l'handle pcap
         char *device = "wlp5s0";
         char error_buffer[PCAP_ERRBUF_SIZE];
@@ -93,7 +112,7 @@ int main(int argc, char *argv[])
         pcap_activate(handle);
         int total_packet_count = 10;
 
-        pcap_loop(handle, total_packet_count, my_packet_handler, NULL);
+        pcap_loop(handle, total_packet_count, my_packet_handler, (unsigned char *) rule_ds);
 
         return 0;
 }
