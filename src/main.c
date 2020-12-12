@@ -23,6 +23,26 @@ void rule_matcher(Rule *rules_ds, ETHER_Frame *frame)
 {
 }
 
+void parse_rule(char line[100], Rule * rules_ds, int current_line)
+{
+  char options[50];
+  sscanf(line, "%s %s %s %s %s %s %s (%[^)])",
+        rules_ds[current_line].action, rules_ds[current_line].protocol, rules_ds[current_line].source_ad, rules_ds[current_line].source_po, rules_ds[current_line].direction, rules_ds[current_line].destination_ad, rules_ds[current_line].destination_po, options); 
+  char * option_rest;
+  char * option = strtok_r(options, ";", &option_rest);
+  char * option_content;
+  int current_option = 0;
+  // using strtok_r to avoid deleting the content of the original rule line
+  // Using strtok for the rest since the buffer of the origina rule line is saved inside &option_rest
+  while(option != NULL) {
+    option_content = strtok(option, ":");
+    strcpy(rules_ds[current_line].options[current_option].key, option_content);
+    option_content = strtok(NULL, ":");
+    strcpy(rules_ds[current_line].options[current_option].value, option_content);
+    option = strtok_r(option_rest, ";", &option_rest);
+    current_option++;
+  }
+}
 
 void read_rules(FILE * file, Rule *rules_ds, int count)
 {
@@ -30,23 +50,7 @@ void read_rules(FILE * file, Rule *rules_ds, int count)
   char line[100];
   while(fgets(line, 100, file) != NULL)
   {
-    char options[50];
-    sscanf(line, "%s %s %s %s %s %s %s (%[^)])",
-        rules_ds[current_line].action, rules_ds[current_line].protocol, rules_ds[current_line].source_ad, rules_ds[current_line].source_po, rules_ds[current_line].direction, rules_ds[current_line].destination_ad, rules_ds[current_line].destination_po, options); 
-    char * option_rest;
-    char * option = strtok_r(options, ";", &option_rest);
-    char * option_content;
-    int current_option = 0;
-    // using strtok_r to avoid deleting the content of the original rule line
-    // Using strtok for the rest since the buffer of the origina rule line is saved inside &option_rest
-    while(option != NULL) {
-      option_content = strtok(option, ":");
-      strcpy(rules_ds[current_line].options[current_option].key, option_content);
-      option_content = strtok(NULL, ":");
-      strcpy(rules_ds[current_line].options[current_option].value, option_content);
-      option = strtok_r(option_rest, ";", &option_rest);
-      current_option++;
-    }
+    parse_rule(line, rules_ds, current_line);
     current_line++;
   }
   fclose(file);
