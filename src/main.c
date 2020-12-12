@@ -18,8 +18,13 @@ struct ids_rule
   Rule_option options[2];
 } typedef Rule;
 
+struct pcap_loop_arg
+{
+  int rules_ds_size;
+  Rule * rules_ds;
+} typedef Pcap_loop_arg;
 
-void rule_matcher(Rule *rules_ds, ETHER_Frame *frame)
+void rule_matcher(Rule *rules_ds, int rules_ds_size, ETHER_Frame *frame)
 {
 }
 
@@ -81,9 +86,10 @@ void my_packet_handler(
         const u_char *packet
 )
 {
-  Rule * rule_ds = (Rule *) args;
+  Pcap_loop_arg * pcap_args = (Pcap_loop_arg*) args;
   ETHER_Frame custom_frame;
   populate_packet_ds(header, packet, &custom_frame);
+  rule_matcher(pcap_args->rules_ds, pcap_args->rules_ds_size, &custom_frame);
 }
 
 int main(int argc, char *argv[]) 
@@ -95,22 +101,22 @@ int main(int argc, char *argv[])
         printf("Nombre de règles dans le fichier: %d\n", nb_line);
 
         // Lecture des règles et populate rule_ds
-        Rule rule_ds[nb_line];
+        Rule rules_ds[nb_line];
         fptr = fopen(argv[1], "r");
-        read_rules(fptr, rule_ds, nb_line);
+        read_rules(fptr, rules_ds, nb_line);
 
         // Test de rule_ds
         for(int i=0; i < nb_line; i++)
         {
-          printf("Action: %s\n", rule_ds[i].action);
-          printf("Protocol: %s\n", rule_ds[i].protocol);
-          printf("source address: %s\n", rule_ds[i].source_ad);
-          printf("Source port: %s\n", rule_ds[i].source_po);
-          printf("Direction: %s\n", rule_ds[i].direction);
-          printf("Destination Adress: %s\n", rule_ds[i].destination_ad);
-          printf("Destination Port: %s\n", rule_ds[i].destination_po);
-          printf("Option key: %s\n", rule_ds[i].options[0].key);
-          printf("Option Value: %s\n", rule_ds[i].options[0].value);
+          printf("Action: %s\n", rules_ds[i].action);
+          printf("Protocol: %s\n", rules_ds[i].protocol);
+          printf("source address: %s\n", rules_ds[i].source_ad);
+          printf("Source port: %s\n", rules_ds[i].source_po);
+          printf("Direction: %s\n", rules_ds[i].direction);
+          printf("Destination Adress: %s\n", rules_ds[i].destination_ad);
+          printf("Destination Port: %s\n", rules_ds[i].destination_po);
+          printf("Option key: %s\n", rules_ds[i].options[0].key);
+          printf("Option Value: %s\n", rules_ds[i].options[0].value);
         }
 
         // Désignation du device + de l'handle pcap
@@ -124,7 +130,10 @@ int main(int argc, char *argv[])
         pcap_activate(handle);
         int total_packet_count = 10;
 
-        pcap_loop(handle, total_packet_count, my_packet_handler, (unsigned char *) rule_ds);
+        Pcap_loop_arg pcap_args;
+        pcap_args.rules_ds = rules_ds;
+        pcap_args.rules_ds_size = nb_line;
+        pcap_loop(handle, total_packet_count, my_packet_handler, (unsigned char *) &pcap_args);
 
         return 0;
 }
