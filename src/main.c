@@ -26,6 +26,13 @@ struct pcap_loop_arg
 
 void rule_matcher(Rule *rules_ds, int rules_ds_size, ETHER_Frame *frame)
 {
+  for(int i = 0; i < rules_ds_size; i++)
+  {
+    if(strcmp(rules_ds[i].protocol, "http") == 0 && strstr(frame->data.data.data, "HTTP") != NULL)
+    {
+      printf("HTTP PACKET RECEIVED");
+    }
+  }
 }
 
 void parse_rule(char line[100], Rule * rules_ds, int current_line)
@@ -89,6 +96,7 @@ void my_packet_handler(
   Pcap_loop_arg * pcap_args = (Pcap_loop_arg*) args;
   ETHER_Frame custom_frame;
   populate_packet_ds(header, packet, &custom_frame);
+  printf("%s", custom_frame.data.data.data);
   rule_matcher(pcap_args->rules_ds, pcap_args->rules_ds_size, &custom_frame);
 }
 
@@ -128,7 +136,7 @@ int main(int argc, char *argv[])
         handle = pcap_create(device,error_buffer);
         pcap_set_timeout(handle,10);
         pcap_activate(handle);
-        int total_packet_count = 10;
+        int total_packet_count = 100;
 
         Pcap_loop_arg pcap_args;
         pcap_args.rules_ds = rules_ds;
