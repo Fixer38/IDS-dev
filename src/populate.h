@@ -1,3 +1,5 @@
+#ifndef POPULATE_H
+#define POPULATE_H
 #include <pcap.h>
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
@@ -112,3 +114,4 @@ struct custom_ethernet
 
 int populate_packet_ds(const struct pcap_pkthdr *header, const u_char *packet,ETHER_Frame * frame);
 void print_payload(int payload_length, unsigned char *payload);
+#endif
