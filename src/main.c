@@ -1,22 +1,6 @@
-#include "populate.h"
+#include "protocol.h"
+#include "rule.h"
 
-struct rule_option
-{
-  char key[20];
-  char value[50];
-} typedef Rule_option;
-
-struct ids_rule
-{
-  char action[6];
-  char protocol[6];
-  char source_ad[IP_ADDR_LEN_STR];
-  char source_po[5];
-  char direction[3];
-  char destination_ad[IP_ADDR_LEN_STR];
-  char destination_po[5];
-  Rule_option options[2];
-} typedef Rule;
 
 struct pcap_loop_arg
 {
@@ -28,9 +12,9 @@ void rule_matcher(Rule *rules_ds, int rules_ds_size, ETHER_Frame *frame)
 {
   for(int i = 0; i < rules_ds_size; i++)
   {
-    if(strcmp(rules_ds[i].protocol, "http") == 0 && strstr(frame->data.data.data, "HTTP") != NULL)
+    if(strcmp(rules_ds[i].protocol, "http") == 0)
     {
-      printf("HTTP PACKET RECEIVED");
+      check_http(frame, rules_ds[i]);
     }
   }
 }
