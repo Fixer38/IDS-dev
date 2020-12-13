@@ -6,18 +6,11 @@
 #include "populate.h"
 #include "rule.h"
 
-int matching_ip(char ip_from_frame[IP_ADDR_LEN_STR], char ip_from_rule[IP_ADDR_LEN_STR])
+int match_ip(char ip_from_frame[IP_ADDR_LEN_STR], char ip_from_rule[IP_ADDR_LEN_STR])
 {
-  if(ip_from_frame == ip_from_rule || strcmp(ip_from_rule, "any"))
-  {
-    return 1;
-  }
-  return 0;
-}
-
-int match_field(int field1, int field2)
-{
-  if(field1 == field2)
+  printf("Source ip from frame: %s\n", ip_from_frame);
+  printf("Source ip from rule: %s\n", ip_from_rule);
+  if(ip_from_frame == ip_from_rule || strcmp(ip_from_rule, "any") == 0)
   {
     return 1;
   }
@@ -26,7 +19,7 @@ int match_field(int field1, int field2)
 
 int match_port(int port_from_frame, char port_from_rule[5])
 {
-  if(strcmp(port_from_rule, "any"))
+  if(strcmp(port_from_rule, "any") == 0)
   {
     return 1;
   }
@@ -37,21 +30,26 @@ int match_port(int port_from_frame, char port_from_rule[5])
   return 0;
 }
 
-int match_all_ports(int port_from_frame_source, int port_from_frame_dest, char port_from_rule_source[5], char port_from_rule_dest[5])
+void check_http(ETHER_Frame *frame, Rule rule)
 {
-  if(match_port(port_from_frame_source, port_from_rule_source) == 1 && match_port(port_from_frame_dest, port_from_rule_dest) == 1)
+  if(strstr(frame->data.data.data, "HTTP") != NULL)
   {
-    return 1;
-  }
-  return 0;
-}
-
-int check_http(ETHER_Frame *frame, Rule rule)
-{
-  int flag = 1;
-  if(strstr((const char *) frame->data.data.data, "HTTP") != NULL)
-  {
-    printf("test de check_htp");
+    int field_matches = 0;
+    field_matches = field_matches + match_ip(frame->data.source_ip, rule.source_ad);
+    printf("field_matches: %d\n", field_matches);
+    field_matches = field_matches + match_ip(frame->data.destination_ip, rule.destination_ad);
+    printf("field_matches: %d\n", field_matches);
+    field_matches = field_matches + match_port(frame->data.data.source_port, rule.source_po);
+    printf("field_matches: %d\n", field_matches);
+    field_matches = field_matches + match_port(frame->data.data.destination_port, rule.destination_po);
+    printf("field_matches: %d\n", field_matches);
+    if(field_matches == 4)
+    {
+      printf("%ld", sizeof(rule.options) / sizeof(Rule_option));
+    }
+    else {
+      printf("Packet discarded");
+    }
   }
 }
 #endif
