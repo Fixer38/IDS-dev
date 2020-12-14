@@ -14,7 +14,7 @@ void rule_matcher(Rule *rules_ds, int rules_ds_size, ETHER_Frame *frame)
   {
     if(strcmp(rules_ds[i].protocol, "http") == 0)
     {
-      //check_http(frame, rules_ds[i]);
+      check_http(frame, rules_ds[i]);
     }
   }
 }
