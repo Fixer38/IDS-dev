@@ -33,10 +33,12 @@ int populate_packet_ds(const struct pcap_pkthdr *header, const u_char *packet, E
         const struct sniff_ethernet *ethernet; /* The ethernet header */
         const struct sniff_ip *ip; /* The IP header */
         const struct sniff_tcp *tcp; /* The TCP header */
+        const struct sniff_udp *udp;
         unsigned char *payload; /* Packet payload */
 
         u_int size_ip;
         u_int size_tcp;
+        u_int size_udp;
 
         ethernet = (struct sniff_ethernet*)(packet);
         //ETHER_Frame custom_frame;
@@ -75,6 +77,7 @@ int populate_packet_ds(const struct pcap_pkthdr *header, const u_char *packet, E
 
                 strcpy(custom_packet.source_ip,src_ip);
                 strcpy(custom_packet.destination_ip, dst_ip);
+                custom_packet.transport_type = NONE;
 
                 size_ip = IP_HL(ip)*4;
 
@@ -86,6 +89,21 @@ int populate_packet_ds(const struct pcap_pkthdr *header, const u_char *packet, E
                 if((int)ip->ip_p==UDP_PROTOCOL)
                 {
                         printf("\nUDP Handling\n");
+                        udp = (struct sniff_udp*)(packet + SIZE_ETHERNET + size_ip);
+                        UDP_Packet custom_datagram;
+                        size_udp = ntohs(udp->data_length);
+
+                        payload = (u_char *)(packet + SIZE_ETHERNET + size_ip + 8);
+                        
+                        custom_datagram.source_port = ntohs(udp->sport);
+                        custom_datagram.destination_port = ntohs(udp->dport);
+                        custom_datagram.data = payload;
+                        int payload_length = ntohs(ip->ip_len) - (size_ip + 8);
+                        custom_datagram.data_length = payload_length;
+
+                        custom_packet.udp_data = custom_datagram;
+                        custom_packet.transport_type = UDP;
+                        custom_frame->data = custom_packet;
                 }
                 if((int)ip->ip_p==TCP_PROTOCOL)
                 {
@@ -109,7 +127,8 @@ int populate_packet_ds(const struct pcap_pkthdr *header, const u_char *packet, E
                         custom_segment.data = payload;
                         custom_segment.data_length = payload_length;
 
-                        custom_packet.data = custom_segment;
+                        custom_packet.tcp_data = custom_segment;
+                        custom_packet.transport_type = TCP;
                         custom_frame->data = custom_packet;
                 }
         }
