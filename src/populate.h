@@ -72,13 +72,25 @@ struct sniff_tcp {
         u_short th_urp;         /* urgent pointer */
 };
 
+struct sniff_udp {
+  u_short sport;
+  u_short dport;
+  u_short data_length;
+  u_short checksum;
+};
+
+typedef enum {
+  NONE,
+  TCP,
+  UDP
+} TransportType;
 
 struct custom_udp
 {
         int source_port;
         int destination_port;
         unsigned char *data;
-
+        int data_length;
 } typedef UDP_Packet;
 
 struct custom_tcp
@@ -97,7 +109,9 @@ struct custom_ip
 {
         char source_ip[IP_ADDR_LEN_STR];
         char destination_ip[IP_ADDR_LEN_STR];
-        TCP_Segment data;
+        TransportType transport_type;
+        TCP_Segment tcp_data;
+        UDP_Packet udp_data;
 
 } typedef IP_Packet;
 
