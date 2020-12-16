@@ -48,6 +48,14 @@ void check_http(ETHER_Frame *frame, Rule rule)
       {
         if(match_ports_and_ip(frame, rule) == 4)
         {
+          int size_of_options = sizeof(rule.options)/sizeof(Rule_option);
+          for(int i = 0; i < size_of_options; i++)
+          {
+            if(strcmp(rule.options[i].key, "msg") == 0)
+            {
+              printf("%s\n", rule.options[i].value);
+            }
+          }
           printf("%ld", sizeof(rule.options) / sizeof(Rule_option));
         }
         else {
@@ -64,6 +72,14 @@ void check_tcp(ETHER_Frame *frame, Rule rule)
   {
     if(match_ports_and_ip(frame, rule) == 4)
     {
+      int size_of_options = sizeof(rule.options)/sizeof(Rule_option);
+      for(int i = 0; i < size_of_options; i++)
+      {
+        if(strcmp(rule.options[i].key, "msg") == 0)
+        {
+          printf("%s\n", rule.options[i].value);
+        }
+      }
       printf("Packet TCP est flag par la règle\n");
     }
     else {
@@ -78,6 +94,14 @@ void check_udp(ETHER_Frame *frame, Rule rule)
   {
     if(match_ports_and_ip(frame, rule) == 4)
     {
+      int size_of_options = sizeof(rule.options)/sizeof(Rule_option);
+      for(int i = 0; i < size_of_options; i++)
+      {
+        if(strcmp(rule.options[i].key, "msg") == 0)
+        {
+          printf("%s\n", rule.options[i].value);
+        }
+      }
       printf("Packet UDP flagged by rule\n");
     }
     else {
