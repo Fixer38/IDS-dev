@@ -16,6 +16,14 @@ void rule_matcher(Rule *rules_ds, int rules_ds_size, ETHER_Frame *frame)
     {
       check_http(frame, rules_ds[i]);
     }
+    else if(strcmp(rules_ds[i].protocol, "tcp") == 0)
+    {
+      check_tcp(frame, rules_ds[i]);
+    }
+    else if(strcmp(rules_ds[i].protocol, "udp") == 0)
+    {
+      check_udp(frame, rules_ds[i]);
+    }
   }
 }
 
