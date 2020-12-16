@@ -1,7 +1,6 @@
 #include "protocol.h"
 #include "rule.h"
 
-
 struct pcap_loop_arg
 {
   int rules_ds_size;
