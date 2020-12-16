@@ -28,6 +28,16 @@ int match_port(int port_from_frame, char port_from_rule[5])
   return 0;
 }
 
+int match_ports_and_ip(ETHER_Frame *frame, Rule rule)
+{
+  int field_matches = 0;
+  field_matches = field_matches + match_ip(frame->data.source_ip, rule.source_ad);
+  field_matches = field_matches + match_ip(frame->data.destination_ip, rule.destination_ad);
+  field_matches = field_matches + match_port(frame->data.tcp_data.source_port, rule.source_po);
+  field_matches = field_matches + match_port(frame->data.tcp_data.destination_port, rule.destination_po);
+  return field_matches;
+}
+
 void check_http(ETHER_Frame *frame, Rule rule)
 {
   if(frame->ethernet_type == IPV4)
@@ -36,16 +46,7 @@ void check_http(ETHER_Frame *frame, Rule rule)
     {
       if(strstr(frame->data.tcp_data.data, "HTTP") != NULL)
       {
-        int field_matches = 0;
-        field_matches = field_matches + match_ip(frame->data.source_ip, rule.source_ad);
-        printf("field_matches: %d\n", field_matches);
-        field_matches = field_matches + match_ip(frame->data.destination_ip, rule.destination_ad);
-        printf("field_matches: %d\n", field_matches);
-        field_matches = field_matches + match_port(frame->data.tcp_data.source_port, rule.source_po);
-        printf("field_matches: %d\n", field_matches);
-        field_matches = field_matches + match_port(frame->data.tcp_data.destination_port, rule.destination_po);
-        printf("field_matches: %d\n", field_matches);
-        if(field_matches == 4)
+        if(match_ports_and_ip(frame, rule) == 4)
         {
           printf("%ld", sizeof(rule.options) / sizeof(Rule_option));
         }
@@ -53,6 +54,34 @@ void check_http(ETHER_Frame *frame, Rule rule)
           printf("Packet discarded");
         }
       }
+    }
+  }
+}
+
+void check_tcp(ETHER_Frame *frame, Rule rule)
+{
+  if(frame->data.transport_type == TCP)
+  {
+    if(match_ports_and_ip(frame, rule) == 4)
+    {
+      printf("Packet TCP est flag par la règle\n");
+    }
+    else {
+      printf("Packet discarded");
+    }
+  }
+}
+
+void check_udp(ETHER_Frame *frame, Rule rule)
+{
+  if(frame->data.transport_type == UDP)
+  {
+    if(match_ports_and_ip(frame, rule) == 4)
+    {
+      printf("Packet UDP flagged by rule\n");
+    }
+    else {
+      printf("Packet Discarded");
     }
   }
 }
