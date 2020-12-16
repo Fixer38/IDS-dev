@@ -93,46 +93,46 @@ void my_packet_handler(
 
 int main(int argc, char *argv[]) 
 {
-        // Lecture du nombre de règles
-        FILE *fptr;
-        fptr = fopen(argv[1], "r");
-        int nb_line = count_line_in_file(fptr);
-        printf("Nombre de règles dans le fichier: %d\n", nb_line);
+  // Lecture du nombre de règles
+  FILE *fptr;
+  fptr = fopen(argv[1], "r");
+  int nb_line = count_line_in_file(fptr);
+  printf("Nombre de règles dans le fichier: %d\n", nb_line);
 
-        // Lecture des règles et populate rule_ds
-        Rule rules_ds[nb_line];
-        fptr = fopen(argv[1], "r");
-        read_rules(fptr, rules_ds, nb_line);
+  // Lecture des règles et populate rule_ds
+  Rule rules_ds[nb_line];
+  fptr = fopen(argv[1], "r");
+  read_rules(fptr, rules_ds, nb_line);
 
-        // Test de rule_ds
-        for(int i=0; i < nb_line; i++)
-        {
-          printf("Action: %s\n", rules_ds[i].action);
-          printf("Protocol: %s\n", rules_ds[i].protocol);
-          printf("source address: %s\n", rules_ds[i].source_ad);
-          printf("Source port: %s\n", rules_ds[i].source_po);
-          printf("Direction: %s\n", rules_ds[i].direction);
-          printf("Destination Adress: %s\n", rules_ds[i].destination_ad);
-          printf("Destination Port: %s\n", rules_ds[i].destination_po);
-          printf("Option key: %s\n", rules_ds[i].options[0].key);
-          printf("Option Value: %s\n", rules_ds[i].options[0].value);
-        }
+  // Test de rule_ds
+  for(int i=0; i < nb_line; i++)
+  {
+    printf("Action: %s\n", rules_ds[i].action);
+    printf("Protocol: %s\n", rules_ds[i].protocol);
+    printf("source address: %s\n", rules_ds[i].source_ad);
+    printf("Source port: %s\n", rules_ds[i].source_po);
+    printf("Direction: %s\n", rules_ds[i].direction);
+    printf("Destination Adress: %s\n", rules_ds[i].destination_ad);
+    printf("Destination Port: %s\n", rules_ds[i].destination_po);
+    printf("Option key: %s\n", rules_ds[i].options[0].key);
+    printf("Option Value: %s\n", rules_ds[i].options[0].value);
+  }
 
-        // Désignation du device + de l'handle pcap
-        char *device = "wlp5s0";
-        char error_buffer[PCAP_ERRBUF_SIZE];
-        pcap_t *handle;
+  // Désignation du device + de l'handle pcap
+  char *device = "wlp5s0";
+  char error_buffer[PCAP_ERRBUF_SIZE];
+  pcap_t *handle;
 
-        // Option de pcap
-        handle = pcap_create(device,error_buffer);
-        pcap_set_timeout(handle,10);
-        pcap_activate(handle);
-        int total_packet_count = 100;
+  // Option de pcap
+  handle = pcap_create(device,error_buffer);
+  pcap_set_timeout(handle,10);
+  pcap_activate(handle);
+  int total_packet_count = 100;
 
-        Pcap_loop_arg pcap_args;
-        pcap_args.rules_ds = rules_ds;
-        pcap_args.rules_ds_size = nb_line;
-        pcap_loop(handle, total_packet_count, my_packet_handler, (unsigned char *) &pcap_args);
+  Pcap_loop_arg pcap_args;
+  pcap_args.rules_ds = rules_ds;
+  pcap_args.rules_ds_size = nb_line;
+  pcap_loop(handle, total_packet_count, my_packet_handler, (unsigned char *) &pcap_args);
 
-        return 0;
+  return 0;
 }
