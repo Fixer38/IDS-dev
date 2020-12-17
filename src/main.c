@@ -47,30 +47,39 @@ void parse_rule(char line[100], Rule * rules_ds, int current_line)
   }
 }
 
-void read_rules(FILE * file, Rule *rules_ds, int count)
+int increase_rules_ds(Rule **rules_ds, int nb_rule)
+{
+  Rule * temp = (Rule *) realloc(*rules_ds, (nb_rule * sizeof(Rule)));
+  if(temp == NULL)
+  {
+    return 0;
+  }
+  else {
+    *rules_ds = temp;
+  }
+  return 1;
+}
+
+int read_rules(FILE * file, Rule **rules_ds)
 {
   int current_line = 0;
   char line[100];
+  int alloc_success = 0;
   while(fgets(line, 100, file) != NULL)
   {
-    parse_rule(line, rules_ds, current_line);
+    parse_rule(line, *rules_ds, current_line);
     current_line++;
+    alloc_success = increase_rules_ds(rules_ds, current_line+1);
+    if(alloc_success == 0)
+    {
+      printf("Erreur lors de l'allocation de la mémoire, fin du programme.");
+      fclose(file);
+      return 0;
+    }
   }
   fclose(file);
+  return current_line;
 }
-
-int count_line_in_file(FILE * file)
-{
-  char line[100];
-  int nb_line = 0;
-  while(fgets(line, 100, file) != NULL)
-  {
-    nb_line++;
-  }
-  fclose(file);
-  return nb_line;
-}
-
 
 void my_packet_handler(
         u_char *args,
@@ -93,33 +102,37 @@ int main(int argc, char *argv[])
     exit(1);
   }
 
-  FILE *fptr;
+
+  // Lecture des règles et populate rule_ds
+  FILE * fptr;
+  Rule * rules_ds = (Rule*) malloc(sizeof(Rule));
+  printf("%s", rules_ds[0].protocol);
   fptr = fopen(argv[1], "r");
   if(fptr == NULL){
     printf("Erreur lors de l'ouverture du fichier\n");
     exit(1);
   }
-  int nb_line = count_line_in_file(fptr);
-  printf("Nombre de règles dans le fichier: %d\n", nb_line);
-
-  // Lecture des règles et populate rule_ds
-  Rule rules_ds[nb_line];
-  fptr = fopen(argv[1], "r");
-  read_rules(fptr, rules_ds, nb_line);
+  int nb_rule = read_rules(fptr, &rules_ds);
+  if(nb_rule == 0)
+  {
+    printf("Aucune règle détectée, fin du programme.\n");
+    free(rules_ds);
+    exit(1);
+  }
 
   // Test de rule_ds
-  //for(int i=0; i < nb_line; i++)
-  //{
-    //printf("Action: %s\n", rules_ds[i].action);
-    //printf("Protocol: %s\n", rules_ds[i].protocol);
-    //printf("source address: %s\n", rules_ds[i].source_ad);
-    //printf("Source port: %s\n", rules_ds[i].source_po);
-    //printf("Direction: %s\n", rules_ds[i].direction);
-    //printf("Destination Adress: %s\n", rules_ds[i].destination_ad);
-    //printf("Destination Port: %s\n", rules_ds[i].destination_po);
-    //printf("Option key: %s\n", rules_ds[i].options[0].key);
-    //printf("Option Value: %s\n", rules_ds[i].options[0].value);
-  //}
+  for(int i=0; i < nb_rule; i++)
+  {
+    printf("Action: %s\n", rules_ds[i].action);
+    printf("Protocol: %s\n", rules_ds[i].protocol);
+    printf("source address: %s\n", rules_ds[i].source_ad);
+    printf("Source port: %s\n", rules_ds[i].source_po);
+    printf("Direction: %s\n", rules_ds[i].direction);
+    printf("Destination Adress: %s\n", rules_ds[i].destination_ad);
+    printf("Destination Port: %s\n", rules_ds[i].destination_po);
+    printf("Option key: %s\n", rules_ds[i].options[0].key);
+    printf("Option Value: %s\n", rules_ds[i].options[0].value);
+  }
 
   // Désignation du device + de l'handle pcap
   char *device = "wlp5s0";
@@ -134,8 +147,9 @@ int main(int argc, char *argv[])
 
   Pcap_loop_arg pcap_args;
   pcap_args.rules_ds = rules_ds;
-  pcap_args.rules_ds_size = nb_line;
+  pcap_args.rules_ds_size = nb_rule;
   pcap_loop(handle, total_packet_count, my_packet_handler, (unsigned char *) &pcap_args);
+  free(rules_ds);
 
   return 0;
 }
