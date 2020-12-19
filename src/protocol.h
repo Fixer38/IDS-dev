@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <syslog.h>
 #include "populate.h"
 #include "rule.h"
 
@@ -38,6 +39,36 @@ int match_ports_and_ip(ETHER_Frame *frame, Rule rule)
   return field_matches;
 }
 
+void check_option(ETHER_Frame * frame, Rule_option * options, int size_of_options)
+{
+  char * msg = get_option_item(options, "msg", size_of_options);
+  char * content = get_option_item(options, " content", size_of_options);
+  printf("msg: %s, content: %s", msg, content);
+  if(msg != NULL)
+  {
+    if(content == NULL)
+    {
+      syslog(LOG_INFO, "%s", msg);
+    }
+    else
+    {
+      if(frame->data.transport_type == UDP)
+      {
+        if(strstr(frame->data.udp_data.data, content) != NULL)
+        {
+          syslog(LOG_INFO, "%s", msg);
+        }
+      }
+      else
+      {
+        if(strstr(frame->data.tcp_data.data, content) != NULL)
+        {
+          syslog(LOG_INFO, "%s", msg);
+        }
+      }
+    }
+  }
+}
 void check_http(ETHER_Frame *frame, Rule rule)
 {
   if(frame->ethernet_type == IPV4)
@@ -49,14 +80,7 @@ void check_http(ETHER_Frame *frame, Rule rule)
         if(match_ports_and_ip(frame, rule) == 4)
         {
           int size_of_options = sizeof(rule.options)/sizeof(Rule_option);
-          for(int i = 0; i < size_of_options; i++)
-          {
-            if(strcmp(rule.options[i].key, "msg") == 0)
-            {
-              printf("%s\n", rule.options[i].value);
-            }
-          }
-          printf("%ld", sizeof(rule.options) / sizeof(Rule_option));
+          check_option(frame, rule.options, size_of_options);
         }
         else {
           printf("Packet discarded");
@@ -73,14 +97,7 @@ void check_tcp(ETHER_Frame *frame, Rule rule)
     if(match_ports_and_ip(frame, rule) == 4)
     {
       int size_of_options = sizeof(rule.options)/sizeof(Rule_option);
-      for(int i = 0; i < size_of_options; i++)
-      {
-        if(strcmp(rule.options[i].key, "msg") == 0)
-        {
-          printf("%s\n", rule.options[i].value);
-        }
-      }
-      printf("Packet TCP est flag par la règle\n");
+      check_option(frame, rule.options, size_of_options);
     }
     else {
       printf("Packet discarded");
@@ -95,14 +112,7 @@ void check_udp(ETHER_Frame *frame, Rule rule)
     if(match_ports_and_ip(frame, rule) == 4)
     {
       int size_of_options = sizeof(rule.options)/sizeof(Rule_option);
-      for(int i = 0; i < size_of_options; i++)
-      {
-        if(strcmp(rule.options[i].key, "msg") == 0)
-        {
-          printf("%s\n", rule.options[i].value);
-        }
-      }
-      printf("Packet UDP flagged by rule\n");
+      check_option(frame, rule.options, size_of_options);
     }
     else {
       printf("Packet Discarded");
