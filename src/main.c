@@ -1,4 +1,4 @@
-#include "protocol.h"
+#include "protocol.c"
 #include "rule.h"
 
 struct pcap_loop_arg
