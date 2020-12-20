@@ -26,6 +26,17 @@ void rule_matcher(Rule *rules_ds, int rules_ds_size, ETHER_Frame *frame)
   }
 }
 
+void reformat_option_value(Rule_option * options, int size_of_options)
+{
+  for(int i = 0; i < size_of_options; i++)
+  {
+    char * new_option_value = options[i].value;
+    new_option_value++;
+    memmove(options[i].value, options[i].value+1, strlen(options[i].value+1) + 1);
+    options[i].value[strlen(options[i].value) - 1] = '\0';
+  }
+}
+
 void parse_rule(char line[100], Rule * rules_ds, int current_line)
 {
   char options[50];
@@ -45,6 +56,8 @@ void parse_rule(char line[100], Rule * rules_ds, int current_line)
     option = strtok_r(option_rest, ";", &option_rest);
     current_option++;
   }
+  int size_of_option = sizeof(rules_ds[current_line].options)/sizeof(Rule_option);
+  reformat_option_value(rules_ds[current_line].options, size_of_option);
 }
 
 int increase_rules_ds(Rule **rules_ds, int nb_rule)
