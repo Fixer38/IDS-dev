@@ -31,6 +31,7 @@ void print_payload(int payload_length, unsigned char *payload)
 int populate_packet_ds(const struct pcap_pkthdr *header, const u_char *packet, ETHER_Frame *custom_frame)
 {
   const struct sniff_ethernet *ethernet; /* The ethernet header */
+  const struct sniff_arp *arp;
   const struct sniff_ip *ip; /* The IP header */
   const struct sniff_tcp *tcp; /* The TCP header */
   const struct sniff_udp *udp;
@@ -61,6 +62,22 @@ int populate_packet_ds(const struct pcap_pkthdr *header, const u_char *packet, E
   {
     custom_frame->ethernet_type = ARP;
     printf("\nARP packet: %d\n",custom_frame->ethernet_type);
+    arp = (struct sniff_arp*)(packet + SIZE_ETHERNET);
+    ARP_FRAME custom_frame;
+    char custom_target_mac[ETHER_ADDR_LEN_STR];
+    char custom_source_mac[ETHER_ADDR_LEN_STR];
+    for(int i=0;i<6;i++)
+    {
+      printf("custom target mac: %02X", arp->tha[i]);
+    }
+    for(int x=0;x<6;x++)
+    {
+      snprintf(custom_source_mac+(x*2), ETHER_ADDR_LEN_STR,
+          "%02x",arp->sha[x]);
+      snprintf(custom_target_mac+(x*2),ETHER_ADDR_LEN_STR,
+          "%02x",arp->tha[x]);
+    }
+    printf("custom target and source mac: %s", custom_target_mac); 
   }
 
   if(ntohs(ethernet->ether_type) == ETHERTYPE_IP) 
