@@ -43,7 +43,7 @@ void check_option(ETHER_Frame * frame, Rule_option * options, int size_of_option
 {
   char * msg = get_option_item(options, "msg", size_of_options);
   char * content = get_option_item(options, " content", size_of_options);
-  printf("msg: %s, content: %s", msg, content);
+  printf("msg: %s, content: %s, payload: %s", msg, content, frame->data.tcp_data.data);
   if(msg != NULL)
   {
     if(content == NULL)
@@ -82,8 +82,12 @@ void check_http(ETHER_Frame *frame, Rule rule)
           int size_of_options = sizeof(rule.options)/sizeof(Rule_option);
           check_option(frame, rule.options, size_of_options);
         }
-        else {
-          printf("Packet discarded");
+      }
+      else
+      {
+        if(frame->data.tcp_data.source_port == 443 || frame->data.tcp_data.destination_port == 443)
+        {
+          printf("Packet crypté.\n");
         }
       }
     }
