@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
   // Lecture du nombre de règles
   if(argc != 2)
   {
-    printf("usage ids <interface>\n");
+    printf("usage ids <rule_file>\n");
     exit(1);
   }
 
@@ -148,7 +148,7 @@ int main(int argc, char *argv[])
   }
 
   // Désignation du device + de l'handle pcap
-  char *device = "wlp5s0";
+  char *device = "wlp1s0";
   char error_buffer[PCAP_ERRBUF_SIZE];
   pcap_t *handle;
 
