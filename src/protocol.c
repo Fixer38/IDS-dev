@@ -52,7 +52,7 @@ int match_ports_and_ip_udp(ETHER_Frame *frame, Rule rule)
 void check_option(ETHER_Frame * frame, Rule_option * options, int size_of_options)
 {
   char * msg = get_option_item(options, "msg", size_of_options);
-  char * content = get_option_item(options, " content", size_of_options);
+  char * content = get_option_item(options, "content", size_of_options);
   if(msg != NULL)
   {
     if(content == NULL)
@@ -103,6 +103,54 @@ void check_http(ETHER_Frame *frame, Rule rule)
   }
 }
 
+void check_flood(ETHER_Frame * frame, Rule rule, int * syn_flood_seq, int syn_flood_seq_size)
+{
+  int nb_connection = 0;
+  for(int i = 0; i < syn_flood_seq_size; i++)
+  {
+    if(syn_flood_seq[i] != 0)
+    {
+      nb_connection++;
+    }
+  }
+  // Consider a syn flood when more than 10 connections are open
+  if(nb_connection > 10 && match_ports_and_ip_tcp(frame, rule) == 4)
+  {
+    int size_of_options = sizeof(rule.options)/sizeof(Rule_option);
+    check_option(frame, rule.options, size_of_options);
+    printf("SYN FLOOD ATTACK\n");
+  }
+}
+
+int check_syn_flood(ETHER_Frame *frame, Rule rule, int * syn_flood_seq, int syn_flood_seq_size, int next_free_pos)
+{
+  if(frame->data.transport_type == TCP)
+  {
+    // ACK = 0x10 -> decimal: 16
+    // check for ACK and check if its ack number is in the list
+    // means the 3 way handshake is done
+    if(frame->data.tcp_data.th_flag == 16)
+    {
+      for(int i=0; i < syn_flood_seq_size; i++)
+      {
+        if(syn_flood_seq[i] == frame->data.tcp_data.ack_number)
+        {
+          syn_flood_seq[i] = 0;
+        }
+      }
+    }
+    // Using 18 for SYN-ACK flag 0x12 = 18
+    // check for syn-ack and add the sequence number to the list
+    if(frame->data.tcp_data.th_flag == 18)
+    {
+      syn_flood_seq[next_free_pos] = frame->data.tcp_data.sequence_number+1;
+      next_free_pos++;
+    }
+    check_flood(frame, rule, syn_flood_seq, syn_flood_seq_size);
+  }
+  return next_free_pos;
+}
+
 void check_tcp(ETHER_Frame *frame, Rule rule)
 {
   if(frame->data.transport_type == TCP)
@@ -132,4 +180,6 @@ void check_udp(ETHER_Frame *frame, Rule rule)
     }
   }
 }
+
+
 #endif
