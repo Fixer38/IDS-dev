@@ -141,6 +141,7 @@ int populate_packet_ds(const struct pcap_pkthdr *header, const u_char *packet, E
       custom_segment.destination_port = ntohs(tcp->th_dport);
       custom_segment.th_flag = (int)tcp->th_flags;
       printf("Custom flags: %d\n", custom_segment.th_flag);
+      printf("Base flaf: %x\n", tcp->th_flags);
       custom_segment.sequence_number = tcp->th_seq;
       custom_segment.data = payload;
       custom_segment.data_length = payload_length;
