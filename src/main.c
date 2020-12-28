@@ -1,5 +1,8 @@
+#include <ctype.h>
 #include "protocol.c"
 #include "rule.h"
+
+#define syn_flood_seq_size 40
 
 struct pcap_loop_arg
 {
@@ -9,15 +12,27 @@ struct pcap_loop_arg
 
 void rule_matcher(Rule *rules_ds, int rules_ds_size, ETHER_Frame *frame)
 {
+  // Used to contain ack_number to match for after syn-ack
+  // Theoretically contains opened connection on the server as it didn't receive the ack after ack-syn yet
+  int syn_flood_seq[syn_flood_seq_size] = {0};
+  // Used to determine the next free_position in the array
+  int next_free_pos = 0;
   for(int i = 0; i < rules_ds_size; i++)
   {
+    int size_of_options = sizeof(rules_ds[i].options)/sizeof(Rule_option);
     if(strcmp(rules_ds[i].protocol, "http") == 0)
     {
       check_http(frame, rules_ds[i]);
     }
     else if(strcmp(rules_ds[i].protocol, "tcp") == 0)
     {
-      check_tcp(frame, rules_ds[i]);
+      if(get_option_item(rules_ds[i].options, "type", size_of_options) != NULL)
+      {
+        next_free_pos = check_syn_flood(frame, rules_ds[i], syn_flood_seq, syn_flood_seq_size, next_free_pos);
+      }
+      else {
+        check_tcp(frame, rules_ds[i]);
+      }
     }
     else if(strcmp(rules_ds[i].protocol, "udp") == 0)
     {
@@ -34,6 +49,10 @@ void reformat_option_value(Rule_option * options, int size_of_options)
     new_option_value++;
     memmove(options[i].value, options[i].value+1, strlen(options[i].value+1) + 1);
     options[i].value[strlen(options[i].value) - 1] = '\0';
+    if(isspace(options[i].key[0]) != 0)
+    {
+      memmove(options[i].key, options[i].key+1, strlen(options[i].key+1) + 1);
+    }
   }
 }
 
@@ -148,7 +167,7 @@ int main(int argc, char *argv[])
   }
 
   // Désignation du device + de l'handle pcap
-  char *device = "wlp1s0";
+  char *device = "wlp5s0";
   char error_buffer[PCAP_ERRBUF_SIZE];
   pcap_t *handle;
 
