@@ -5,14 +5,14 @@
 
 struct rule_option
 {
-  char key[20];
+  char key[7];
   char value[50];
 } typedef Rule_option;
 
 struct ids_rule
 {
   char action[6];
-  char protocol[6];
+  char protocol[5];
   char source_ad[IP_ADDR_LEN_STR];
   char source_po[5];
   char direction[3];
