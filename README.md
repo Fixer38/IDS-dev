@@ -8,13 +8,13 @@ Membres:
 Compilation:
 
 ```bash
-gcc -o ids main.c populate.c -lpcap
+gcc -o ids main.c populate.c rule.c -lpcap
 ```
 
 Exécution
 
 ```bash
-sudo ./ids
+sudo ./ids ids.rules (ou autre fichier de règles peut importe le nom)
 ```
 
 Versions:
