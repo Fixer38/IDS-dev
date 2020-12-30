@@ -88,9 +88,16 @@ void check_xss(ETHER_Frame *frame, Rule rule)
     {
       if(match_ports_and_ip_tcp(frame, rule) == 4)
       {
-        char * payload = strtok((char *) frame->data.tcp_data.data, " ");
-        payload = strtok(NULL, " ");
-        printf("%s\n", payload);
+        // HTTP packet being formatted this way:
+        // METHOD URL -> second field is URL obtained with str_tok()
+        char * host_from_payload = strtok((char *) frame->data.tcp_data.data, " ");
+        host_from_payload = strtok(NULL, " ");
+        // check for <script> inside the host field
+        if(strstr(host_from_payload, "%3Cscript%3E") != NULL)
+        {
+          int size_of_options = sizeof(rule.options)/sizeof(Rule_option);
+          check_option(frame, rule.options, size_of_options);
+        }
       }
     }
   }
