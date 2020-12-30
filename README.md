@@ -24,6 +24,7 @@ Versions:
   1. Lire les règles de base et les appliquer
   2. Vérifier l'encryption des paquets
   3. Utilisation de argv pour récupérer le fichier de règles
+  4. Gestion de TCP/UDP/HTTP
 
 * 0.2
 

@@ -26,6 +26,23 @@ struct sniff_ethernet
   u_short ether_type; /* IP? ARP? RARP? etc */
 };
 
+/* ARP header */
+struct sniff_arp
+{
+  u_int16_t hd_type; /* Hardware type */
+  uint16_t pr_type; /* Protocol type */
+  u_char hd_len; /* Hardware address length */
+  u_char pr_len; /* Protocol address length */
+  uint16_t oper_code; /* Operation code */
+  u_char sha[6]; /* Sender hardware address */
+  u_char spa[6]; /* Sender ip address */
+  u_char tha[6]; /* Target hardware address */
+  u_char tpa[4]; /* Target ip address */
+};
+
+#define ARP_REQUEST 1
+#define ARP_REPLY 2
+
 /* IP header */
 struct sniff_ip
 {
@@ -113,6 +130,13 @@ struct custom_ip
   UDP_Packet udp_data;
 } typedef IP_Packet;
 
+struct custom_arp
+{
+  char sender_ad[ETHER_ADDR_LEN_STR];
+  char sender_ip[IP_ADDR_LEN_STR];
+  char target_ad[ETHER_ADDR_LEN_STR];
+  char target_ip[IP_ADDR_LEN_STR];
+} typedef ARP_FRAME;
 
 struct custom_ethernet
 {

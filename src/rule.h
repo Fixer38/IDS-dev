@@ -2,6 +2,7 @@
 #define RULE_H
 #include "populate.h"
 
+
 struct rule_option
 {
   char key[20];
@@ -20,4 +21,6 @@ struct ids_rule
   Rule_option options[2];
 } typedef Rule;
 
+
+char * get_option_item(Rule_option * options, char * key, int option_size);
 #endif
