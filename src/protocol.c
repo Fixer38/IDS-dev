@@ -78,12 +78,31 @@ void check_option(ETHER_Frame * frame, Rule_option * options, int size_of_option
     }
   }
 }
+
+void check_xss(ETHER_Frame *frame, Rule rule)
+{
+  if(frame->data.transport_type == TCP)
+  {
+    // check if it's HTTP by checking for HTTP string in the payload
+    if(strstr(frame->data.tcp_data.data, "HTTP") != NULL)
+    {
+      if(match_ports_and_ip_tcp(frame, rule) == 4)
+      {
+        char * payload = strtok((char *) frame->data.tcp_data.data, " ");
+        payload = strtok(NULL, " ");
+        printf("%s\n", payload);
+      }
+    }
+  }
+}
+
 void check_http(ETHER_Frame *frame, Rule rule)
 {
   if(frame->ethernet_type == IPV4)
   {
     if(frame->data.transport_type == TCP)
     {
+      // check if it's HTTP by checking for HTTP string in the payload
       if(strstr(frame->data.tcp_data.data, "HTTP") != NULL)
       {
         if(match_ports_and_ip_tcp(frame, rule) == 4)
@@ -97,6 +116,25 @@ void check_http(ETHER_Frame *frame, Rule rule)
         if(frame->data.tcp_data.source_port == 443 || frame->data.tcp_data.destination_port == 443)
         {
           printf("Packet crypté.\n");
+        }
+      }
+    }
+  }
+}
+
+void check_ftp(ETHER_Frame *frame, Rule rule)
+{
+  if(frame->ethernet_type == IPV4)
+  {
+    if(frame->data.transport_type == TCP)
+    {
+      if(frame->data.tcp_data.source_port == 21 || frame->data.tcp_data.source_port == 20 || frame->data.tcp_data.destination_port == 21 || frame->data.tcp_data.destination_port == 20)
+      {
+        // Using the tcp function since ftp uses tcp exclusively
+        if(match_ports_and_ip_tcp(frame, rule) == 4)
+        {
+          int size_of_options = sizeof(rule.options)/sizeof(Rule_option);
+          check_option(frame, rule.options, size_of_options);
         }
       }
     }
@@ -118,7 +156,7 @@ void check_flood(ETHER_Frame * frame, Rule rule, int * syn_flood_seq, int syn_fl
   {
     int size_of_options = sizeof(rule.options)/sizeof(Rule_option);
     check_option(frame, rule.options, size_of_options);
-    printf("SYN FLOOD ATTACK\n");
+    syslog(LOG_SYSLOG, "%s", "DDOS ATTACK");
   }
 }
 
