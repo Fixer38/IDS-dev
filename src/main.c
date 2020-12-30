@@ -22,21 +22,34 @@ void rule_matcher(Rule *rules_ds, int rules_ds_size, ETHER_Frame *frame)
     int size_of_options = sizeof(rules_ds[i].options)/sizeof(Rule_option);
     if(strcmp(rules_ds[i].protocol, "http") == 0)
     {
-      check_http(frame, rules_ds[i]);
+      char * rule_option_type = get_option_item(rules_ds[i].options, "type", size_of_options);
+      if(rule_option_type && strcmp(rule_option_type, "xss") == 0)
+      {
+        check_xss(frame, rules_ds[i]);
+      }
+      else
+      {
+        check_http(frame, rules_ds[i]);
+      }
     }
     else if(strcmp(rules_ds[i].protocol, "tcp") == 0)
     {
-      if(get_option_item(rules_ds[i].options, "type", size_of_options) != NULL)
-      {
-        next_free_pos = check_syn_flood(frame, rules_ds[i], syn_flood_seq, syn_flood_seq_size, next_free_pos);
-      }
-      else {
-        check_tcp(frame, rules_ds[i]);
-      }
+      //char * rule_option_type = get_option_item(rules_ds[i].options, "type", size_of_options);
+      //if(rule_option_type && strcmp(rule_option_type, "syn flood") == 0)
+      //{
+        //next_free_pos = check_syn_flood(frame, rules_ds[i], syn_flood_seq, syn_flood_seq_size, next_free_pos);
+      //}
+      //else {
+      check_tcp(frame, rules_ds[i]);
+      //}
     }
     else if(strcmp(rules_ds[i].protocol, "udp") == 0)
     {
       check_udp(frame, rules_ds[i]);
+    }
+    else if(strcmp(rules_ds[i].protocol, "ftp") == 0)
+    {
+      check_ftp(frame, rules_ds[i]);
     }
   }
 }
