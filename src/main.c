@@ -180,7 +180,7 @@ int main(int argc, char *argv[])
   }
 
   // Désignation du device + de l'handle pcap
-  char *device = "wlp5s0";
+  char *device = "eth0";
   char error_buffer[PCAP_ERRBUF_SIZE];
   pcap_t *handle;
 
