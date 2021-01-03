@@ -28,7 +28,6 @@ Versions:
 
 * 0.2
 
-  1. Ajout de protocoles supplémentaires
-  2. SYN flood
-  3. Faire tourner l'application en tache de fond
-  4. Détecter attaque XSS
+  1. Ajout du FTP
+  2. Faire tourner l'application en tache de fond
+  3. Détecter les attaques XSS
