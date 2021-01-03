@@ -18,7 +18,7 @@ struct ids_rule
   char direction[3];
   char destination_ad[IP_ADDR_LEN_STR];
   char destination_po[5];
-  Rule_option options[2];
+  Rule_option options[3];
 } typedef Rule;
 
 

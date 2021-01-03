@@ -1,5 +1,8 @@
+#include <ctype.h>
 #include "protocol.c"
 #include "rule.h"
+
+#define syn_flood_seq_size 40
 
 struct pcap_loop_arg
 {
@@ -13,7 +16,16 @@ void rule_matcher(Rule *rules_ds, int rules_ds_size, ETHER_Frame *frame)
   {
     if(strcmp(rules_ds[i].protocol, "http") == 0)
     {
-      check_http(frame, rules_ds[i]);
+      int size_of_options = sizeof(rules_ds[i].options)/sizeof(Rule_option);
+      char * rule_option_type = get_option_item(rules_ds[i].options, "type", size_of_options);
+      if(rule_option_type && strcmp(rule_option_type, "xss") == 0)
+      {
+        check_xss(frame, rules_ds[i]);
+      }
+      else
+      {
+        check_http(frame, rules_ds[i]);
+      }
     }
     else if(strcmp(rules_ds[i].protocol, "tcp") == 0)
     {
@@ -22,6 +34,10 @@ void rule_matcher(Rule *rules_ds, int rules_ds_size, ETHER_Frame *frame)
     else if(strcmp(rules_ds[i].protocol, "udp") == 0)
     {
       check_udp(frame, rules_ds[i]);
+    }
+    else if(strcmp(rules_ds[i].protocol, "ftp") == 0)
+    {
+      check_ftp(frame, rules_ds[i]);
     }
   }
 }
@@ -34,6 +50,10 @@ void reformat_option_value(Rule_option * options, int size_of_options)
     new_option_value++;
     memmove(options[i].value, options[i].value+1, strlen(options[i].value+1) + 1);
     options[i].value[strlen(options[i].value) - 1] = '\0';
+    if(isspace(options[i].key[0]) != 0)
+    {
+      memmove(options[i].key, options[i].key+1, strlen(options[i].key+1) + 1);
+    }
   }
 }
 
@@ -111,7 +131,7 @@ int main(int argc, char *argv[])
   // Lecture du nombre de règles
   if(argc != 2)
   {
-    printf("usage ids <interface>\n");
+    printf("usage ids <rule_file>\n");
     exit(1);
   }
 
@@ -148,7 +168,7 @@ int main(int argc, char *argv[])
   }
 
   // Désignation du device + de l'handle pcap
-  char *device = "wlp5s0";
+  char *device = "eth0";
   char error_buffer[PCAP_ERRBUF_SIZE];
   pcap_t *handle;
 
@@ -158,10 +178,13 @@ int main(int argc, char *argv[])
   pcap_activate(handle);
   int total_packet_count = 100;
 
+  // Lancement de pcap loop en passant struct pcap_args comme argument
   Pcap_loop_arg pcap_args;
   pcap_args.rules_ds = rules_ds;
   pcap_args.rules_ds_size = nb_rule;
   pcap_loop(handle, total_packet_count, my_packet_handler, (unsigned char *) &pcap_args);
+
+  // Libération de la mémoire dynamique allouée à la structure rules_ds
   free(rules_ds);
 
   return 0;
