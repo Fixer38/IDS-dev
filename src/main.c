@@ -178,10 +178,13 @@ int main(int argc, char *argv[])
   pcap_activate(handle);
   int total_packet_count = 100;
 
+  // Lancement de pcap loop en passant struct pcap_args comme argument
   Pcap_loop_arg pcap_args;
   pcap_args.rules_ds = rules_ds;
   pcap_args.rules_ds_size = nb_rule;
   pcap_loop(handle, total_packet_count, my_packet_handler, (unsigned char *) &pcap_args);
+
+  // Libération de la mémoire dynamique allouée à la structure rules_ds
   free(rules_ds);
 
   return 0;
