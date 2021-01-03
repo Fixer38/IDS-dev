@@ -8,13 +8,13 @@ Membres:
 Compilation:
 
 ```bash
-gcc -o ids main.c populate.c -lpcap
+gcc -o ids main.c populate.c rule.c -lpcap
 ```
 
 Exécution
 
 ```bash
-sudo ./ids
+sudo ./ids ids.rules (ou autre fichier de règles peut importe le nom)
 ```
 
 Versions:
@@ -28,7 +28,6 @@ Versions:
 
 * 0.2
 
-  1. Ajout de protocoles supplémentaires
-  2. SYN flood
-  3. Faire tourner l'application en tache de fond
-  4. Détecter attaque XSS
+  1. Ajout du FTP
+  2. Faire tourner l'application en tache de fond
+  3. Détecter les attaques XSS
