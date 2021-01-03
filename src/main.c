@@ -12,16 +12,11 @@ struct pcap_loop_arg
 
 void rule_matcher(Rule *rules_ds, int rules_ds_size, ETHER_Frame *frame)
 {
-  // Used to contain ack_number to match for after syn-ack
-  // Theoretically contains opened connection on the server as it didn't receive the ack after ack-syn yet
-  int syn_flood_seq[syn_flood_seq_size] = {0};
-  // Used to determine the next free_position in the array
-  int next_free_pos = 0;
   for(int i = 0; i < rules_ds_size; i++)
   {
-    int size_of_options = sizeof(rules_ds[i].options)/sizeof(Rule_option);
     if(strcmp(rules_ds[i].protocol, "http") == 0)
     {
+      int size_of_options = sizeof(rules_ds[i].options)/sizeof(Rule_option);
       char * rule_option_type = get_option_item(rules_ds[i].options, "type", size_of_options);
       if(rule_option_type && strcmp(rule_option_type, "xss") == 0)
       {
@@ -34,14 +29,7 @@ void rule_matcher(Rule *rules_ds, int rules_ds_size, ETHER_Frame *frame)
     }
     else if(strcmp(rules_ds[i].protocol, "tcp") == 0)
     {
-      //char * rule_option_type = get_option_item(rules_ds[i].options, "type", size_of_options);
-      //if(rule_option_type && strcmp(rule_option_type, "syn flood") == 0)
-      //{
-        //next_free_pos = check_syn_flood(frame, rules_ds[i], syn_flood_seq, syn_flood_seq_size, next_free_pos);
-      //}
-      //else {
       check_tcp(frame, rules_ds[i]);
-      //}
     }
     else if(strcmp(rules_ds[i].protocol, "udp") == 0)
     {
