@@ -9,7 +9,7 @@
 
 int match_ip(char ip_from_frame[IP_ADDR_LEN_STR], char ip_from_rule[IP_ADDR_LEN_STR])
 {
-  if(ip_from_frame == ip_from_rule || strcmp(ip_from_rule, "any") == 0)
+  if(strcmp(ip_from_frame, ip_from_rule) == 0 || strcmp(ip_from_rule, "any") == 0)
   {
     return 1;
   }
