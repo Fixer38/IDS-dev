@@ -1,5 +1,5 @@
-alert http 192.168.0.6 any -> any any (msg:"shell attack"; content:"bio.acousti.ca";)
-alert tcp 192.168.0.6 any -> any any (msg:"backdoor attack";)
+alert http any any -> any any (msg:"shell attack"; content:"bio.acousti.ca";)
+alert tcp any any -> any any (msg:"backdoor attack";)
 alert udp any any -> any any (msg:"UDP traffic bind port is forbidden";)
 alert ftp any any -> any any (msg:"Unsecure protocol use detected";)
 alert http any any -> any any (msg:"XSS ATTACK UNDERGOING"; type:"xss";)
