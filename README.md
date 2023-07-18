@@ -2,7 +2,6 @@
 
 Membres:
 
-* Dinon Jérémie
 * Deleuze Romain
 
 Compilation:
